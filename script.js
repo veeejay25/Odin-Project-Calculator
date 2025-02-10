@@ -9,6 +9,8 @@ const equalsButton = document.querySelector('.equals');
 const clearButton = document.querySelector('.ac');
 const decimalButton = document.querySelector('.decimal');
 const display = document.querySelector('.display');
+const plusMinusButton = document.querySelector('.plus-minus');
+const percentButton = document.querySelector('.percent');
 
 numberButtons.forEach(button => 
     button.addEventListener('click', () => appendNumber(button.textContent))
@@ -21,6 +23,8 @@ operatorButtons.forEach(button =>
 equalsButton.addEventListener('click', evaluate);
 clearButton.addEventListener('click', clear);
 decimalButton.addEventListener('click', appendDecimal);
+plusMinusButton.addEventListener('click', toggleSign);
+percentButton.addEventListener('click', convertToPercent);
 
 window.addEventListener('keydown', handleKeyboardInput);
 
@@ -57,12 +61,11 @@ function operate(operator, a, b) {
 }
 
 function appendNumber(number) {
-    if (shouldResetScreen) resetScreen();
-    if (display.textContent === '0' && currentOperation === null) {
-        display.textContent = number;
-    } else {
-        display.textContent += number;
+    if (display.textContent === '0' || shouldResetScreen) {
+        resetScreen();
     }
+    display.textContent += number;
+    clearButton.textContent = 'C';
 }
 
 function resetScreen() {
@@ -71,26 +74,36 @@ function resetScreen() {
 }
 
 function clear() {
-    display.textContent = '0';
-    firstOperand = '';
-    secondOperand = '';
-    currentOperation = null;
+    if (shouldResetScreen || display.textContent.length === 1) {
+        display.textContent = '0';
+        firstOperand = '';
+        secondOperand = '';
+        currentOperation = null;
+        shouldResetScreen = false;
+        clearButton.textContent = 'AC';
+    } else {
+        display.textContent = display.textContent.slice(0, -1);
+        clearButton.textContent = 'C';
+    }
 }
 
 function appendDecimal() {
     if (shouldResetScreen) resetScreen();
-    if (display.textContent === '') display.textContent = '0';
-    if (display.textContent.includes('.')) return;
+    const currentNumber = display.textContent.split(/[\+\−\×\÷]/).pop();
+    if (currentNumber.includes('.')) return;
+    if (currentNumber === '') {
+        display.textContent += '0';
+    }
     display.textContent += '.';
 }
 
 function setOperation(operator) {
-    if (currentOperation !== null) {
+    if (currentOperation !== null && !shouldResetScreen) {
         evaluate();
     }
-    firstOperand = display.textContent;
+    firstOperand = display.textContent.split('=')[1] || display.textContent;
     currentOperation = operator;
-    display.textContent += operator;
+    display.textContent = `${firstOperand}${operator}`;
     shouldResetScreen = false;
 }
 
@@ -115,9 +128,10 @@ function evaluate() {
         operate(currentOperation, firstOperand, secondOperand)
     );
     
-    display.textContent = `${firstOperand}${currentOperation}${secondOperand}=${result}`;
+    display.textContent = `${result}`;
     currentOperation = null;
     shouldResetScreen = true;
+    clearButton.textContent = 'AC';
 }
 
 function roundResult(number) {
@@ -134,4 +148,18 @@ function handleKeyboardInput(e) {
         const operator = e.key === '*' ? '×' : e.key === '/' ? '÷' : e.key;
         setOperation(operator);
     }
+}
+
+function toggleSign() {
+    const currentNumber = display.textContent.split(/[\+\−\×\÷]/).pop();
+    if (currentNumber === '') return; // Do nothing if there's no number
+    const newNumber = currentNumber.startsWith('-') ? currentNumber.slice(1) : '-' + currentNumber;
+    display.textContent = display.textContent.slice(0, -currentNumber.length) + newNumber;
+}
+
+function convertToPercent() {
+    const currentNumber = display.textContent.split(/[\+\−\×\÷]/).pop();
+    if (currentNumber === '') return; // Do nothing if there's no number
+    const newNumber = (parseFloat(currentNumber) / 100).toString();
+    display.textContent = display.textContent.slice(0, -currentNumber.length) + newNumber;
 }

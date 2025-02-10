@@ -1,10 +1,17 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #000;
+}   
 .calculator {
     width: 300px;
-    margin: 50px auto;
     border-radius: 20px;
     background: #000;
     padding: 20px;
-    box-shadow: 0px 0px 20px rgba(0,0,0,0.5);
+    box-shadow: 0px 0px 20px white;
 }
 
 .display {
@@ -13,6 +20,8 @@
     text-align: right;
     padding: 20px;
     min-height: 80px;
+    overflow-x: auto;
+    white-space: nowrap;
 }
 
 .buttons {
